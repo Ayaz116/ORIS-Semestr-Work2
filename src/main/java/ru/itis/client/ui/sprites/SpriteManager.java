@@ -55,9 +55,9 @@ public class SpriteManager {
             BufferedImage catRunRightSheet = ImageIO.read(getClass().getResourceAsStream("/sprites/cat/RunRight.png"));
             List<BufferedImage> catRunRight = new ArrayList<>();
             if (catRunRightSheet != null) {
-                int frameWidth = catRunRightSheet.getWidth() / 8; // 8 кадров для бега
+                int frameWidth = catRunRightSheet.getWidth() / 6; // 8 кадров для бега
                 int frameHeight = catRunRightSheet.getHeight();
-                for (int i = 0; i < 8; i++) {
+                for (int i = 0; i < 6; i++) {
                     catRunRight.add(catRunRightSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight));
                 }
             }
@@ -67,9 +67,9 @@ public class SpriteManager {
             BufferedImage catRunLeftSheet = ImageIO.read(getClass().getResourceAsStream("/sprites/cat/RunLeft.png"));
             List<BufferedImage> catRunLeft = new ArrayList<>();
             if (catRunLeftSheet != null) {
-                int frameWidth = catRunLeftSheet.getWidth() / 8; // 8 кадров для бега
+                int frameWidth = catRunLeftSheet.getWidth() / 6; // 8 кадров для бега
                 int frameHeight = catRunLeftSheet.getHeight();
-                for (int i = 0; i < 8; i++) {
+                for (int i = 0; i < 6; i++) {
                     catRunLeft.add(catRunLeftSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight));
                 }
             }
@@ -91,9 +91,9 @@ public class SpriteManager {
             BufferedImage mouseRunRightSheet = ImageIO.read(getClass().getResourceAsStream("/sprites/mouse/RunRight.png"));
             List<BufferedImage> mouseRunRight = new ArrayList<>();
             if (mouseRunRightSheet != null) {
-                int frameWidth = mouseRunRightSheet.getWidth() / 8; // 8 кадров для бега
+                int frameWidth = mouseRunRightSheet.getWidth() / 4; // 8 кадров для бега
                 int frameHeight = mouseRunRightSheet.getHeight();
-                for (int i = 0; i < 8; i++) {
+                for (int i = 0; i < 4; i++) {
                     mouseRunRight.add(mouseRunRightSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight));
                 }
             }
@@ -103,9 +103,9 @@ public class SpriteManager {
             BufferedImage mouseRunLeftSheet = ImageIO.read(getClass().getResourceAsStream("/sprites/mouse/RunLeft.png"));
             List<BufferedImage> mouseRunLeft = new ArrayList<>();
             if (mouseRunLeftSheet != null) {
-                int frameWidth = mouseRunLeftSheet.getWidth() / 8; // 8 кадров для бега
+                int frameWidth = mouseRunLeftSheet.getWidth() / 4; // 8 кадров для бега
                 int frameHeight = mouseRunLeftSheet.getHeight();
-                for (int i = 0; i < 8; i++) {
+                for (int i = 0; i < 4; i++) {
                     mouseRunLeft.add(mouseRunLeftSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight));
                 }
             }

@@ -247,12 +247,12 @@ public class GameClient {
         String winner = "none";
         int catX = GameState.WIDTH / 2; // По умолчанию кот в центре
         int catY = GameState.HEIGHT / 2; // По умолчанию кот в центре
+        int catVelX = 0, catVelY = 0;
         var newMice = new ConcurrentHashMap<String, MouseView>(); // Используем ConcurrentHashMap
         var cheesePts = new ArrayList<Point>();
         var holePts = new ArrayList<Point>();
 
         String[] parts = content.split(";");
-
         for (String part : parts) {
             if (part.startsWith("GAMEOVER|")) {
                 String val = part.substring("GAMEOVER|".length());
@@ -263,9 +263,14 @@ public class GameClient {
                 }
             } else if (part.startsWith("CAT|")) {
                 String coords = part.substring("CAT|".length());
+                System.out.println("====================================");
+                System.out.println(coords);
                 String[] xy = coords.split(",");
+                System.out.println(Arrays.toString(xy));
                 catX = Integer.parseInt(xy[0]);
                 catY = Integer.parseInt(xy[1]);
+                catVelX = Integer.parseInt(xy[2]);
+                catVelY = Integer.parseInt(xy[3]);
             } else if (part.startsWith("MOUSE|")) {
                 String data = part.substring("MOUSE|".length());
                 String[] arr = data.split(",");
@@ -290,7 +295,7 @@ public class GameClient {
         }
 
         // Обновляем состояние игры
-        gamePanel.updateState(gOver, winner, catX, catY, newMice, cheesePts, holePts);
+        gamePanel.updateState(gOver, winner, catX, catY, catVelX, catVelY, newMice, cheesePts, holePts);
     }
 
     private void parse(ArrayList<Point> Pts, String Data) {

@@ -337,7 +337,7 @@ public class ClientHandler extends Thread {
         sb.append("GAMEOVER|").append(gameState.isGameOver()).append(",")
                 .append(gameState.getWinner() == null ? "none" : gameState.getWinner());
 
-        sb.append(";CAT|").append(gameState.getCatX()).append(",").append(gameState.getCatY());
+        sb.append(";CAT|").append(gameState.getCatX()).append(",").append(gameState.getCatY()).append(",").append(gameState.getCatVelX()).append(",").append(gameState.getCatVelY());
 
         var mice = gameState.getAllMice();
         for (var e : mice.entrySet()) {

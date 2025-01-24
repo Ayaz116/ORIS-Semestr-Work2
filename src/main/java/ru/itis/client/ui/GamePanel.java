@@ -67,6 +67,7 @@ public class GamePanel extends JPanel {
      */
     public synchronized void updateState(boolean gOver, String winner,
                                          int catX, int catY,
+                                         double catVelX, double catVelY,
                                          Map<String, MouseView> newMice,
                                          List<Point> newCheese,
                                          List<Point> newHoles) {
@@ -74,6 +75,8 @@ public class GamePanel extends JPanel {
         this.winner = winner;
         this.catX = catX;
         this.catY = catY;
+        this.catVelX = catVelX;
+        this.catVelY = catVelY;
 
         miceMap.clear();
         miceMap.putAll(newMice);

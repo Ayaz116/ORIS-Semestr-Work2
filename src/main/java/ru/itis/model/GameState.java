@@ -232,6 +232,8 @@ public class GameState {
 
     public synchronized int getCatX() { return catX; }
     public synchronized int getCatY() { return catY; }
+    public synchronized int getCatVelX() { return catVx; }
+    public synchronized int getCatVelY() { return catVy; }
     public synchronized Map<String, MouseInfo> getAllMice() {
         return new HashMap<>(miceMap);
     }
