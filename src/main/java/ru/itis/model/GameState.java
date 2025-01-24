@@ -13,9 +13,17 @@ import java.util.*;
  *  - reset() восстанавливает поле
  */
 public class GameState {
-    private static final int CAT_CATCH_RADIUS    = 15;
-    private static final int MOUSE_PICKUP_RADIUS = 10;
-    private static final int HOLE_ENTER_RADIUS   = 10;
+    // Размеры спрайтов
+    private static final int CAT_SIZE = 48;
+    private static final int MOUSE_SIZE = 32;
+    private static final int CHEESE_SIZE = 48;
+    private static final int HOLE_SIZE = 24;  // Обновлен размер норки
+
+    // Радиусы коллизий (уменьшены для более точного определения)
+    private static final int CAT_CATCH_RADIUS = 20;      // Радиус ловли мыши
+    private static final int MOUSE_PICKUP_RADIUS = 15;   // Радиус подбора сыра
+    private static final int HOLE_ENTER_RADIUS = 12;     // Уменьшен радиус входа в нору
+
     private static final int TOTAL_CHEESE_TO_WIN = 3;
 
     public static final int WIDTH  = 800;
@@ -42,17 +50,17 @@ public class GameState {
         cheeseList.clear();
         int cx = WIDTH / 2;
         int cy = HEIGHT / 2;
-        // Две тарелки сыра
-        cheeseList.add(new Point(cx - 40, cy));
-        cheeseList.add(new Point(cx + 40, cy));
+        
+        // Сыр теперь чуть дальше друг от друга
+        cheeseList.add(new Point(cx - 60, cy));
+        cheeseList.add(new Point(cx + 60, cy));
 
         holes.clear();
-        // 4 норки в углах
-        holes.add(new Point(WIDTH / 2, 50));                // верх
-        holes.add(new Point(WIDTH / 2, HEIGHT - 50));        // низ
-        holes.add(new Point(50, HEIGHT / 2));       // лево
-        holes.add(new Point(WIDTH - 50, HEIGHT / 2)); // право
-        // Убрали пятую норку в центре нижней границы
+        // Норки теперь ближе к краям с учетом нового размера
+        holes.add(new Point(WIDTH / 2, HOLE_SIZE + 5));             // верх
+        holes.add(new Point(WIDTH / 2, HEIGHT - HOLE_SIZE - 5));    // низ
+        holes.add(new Point(HOLE_SIZE + 5, HEIGHT / 2));           // лево
+        holes.add(new Point(WIDTH - HOLE_SIZE - 5, HEIGHT / 2));   // право
     }
 
     /**

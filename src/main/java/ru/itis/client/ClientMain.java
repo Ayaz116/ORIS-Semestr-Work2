@@ -16,6 +16,9 @@ public class ClientMain {
     public static void startClient(String host, int port, boolean isHost, String name) {
         SwingUtilities.invokeLater(() -> {
             new GameWindow(host, port, isHost, name);
+            System.out.println("Клиент запущен");
+            System.out.println("Сервер: " + host);
+
         });
     }
 }

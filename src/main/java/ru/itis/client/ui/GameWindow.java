@@ -66,7 +66,16 @@ public class GameWindow extends JFrame {
     private void createLobbyPanel(boolean isHost) {
         lobbyPanel = new JPanel(new BorderLayout());
         lobbyPanel.setPreferredSize(new Dimension(1000, 200));
-
+        
+        // Добавляем градиентный фон для лобби
+        lobbyPanel.setOpaque(false);
+        lobbyPanel.setBackground(new Color(0, 0, 0, 80));
+        
+        // Стилизуем кнопки
+        UIManager.put("Button.background", new Color(70, 130, 180));
+        UIManager.put("Button.foreground", Color.WHITE);
+        UIManager.put("Button.font", new Font("Arial", Font.BOLD, 14));
+        
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
         lobbyLabel = new JLabel("Lobby (waiting for players...)");
         top.add(lobbyLabel);
@@ -107,6 +116,12 @@ public class GameWindow extends JFrame {
         makeCatBtn.addActionListener(this::onMakeCat);
         startGameBtn.addActionListener(this::onStartGame);
         kickPlayerBtn.addActionListener(this::onKickPlayer); // Обработчик для кнопки кика
+
+        // Добавляем тултипы
+        randomRolesBtn.setToolTipText("Случайно назначить роли игрокам");
+        makeCatBtn.setToolTipText("Сделать выбранного игрока котом");
+        startGameBtn.setToolTipText("Начать игру");
+        kickPlayerBtn.setToolTipText("Выгнать выбранного игрока");
     }
 
     /**
