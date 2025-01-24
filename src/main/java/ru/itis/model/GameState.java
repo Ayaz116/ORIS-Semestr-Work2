@@ -3,30 +3,21 @@ package ru.itis.model;
 import java.awt.Point;
 import java.util.*;
 
-/**
- * Логика:
- *  - Поле 800x600
- *  - Две тарелки сыра (бесконечные) в центре
- *  - 5 норок у границ
- *  - clamp со всех сторон
- *  - Радиусные проверки (подбор сыра, сдача, ловля)
- *  - reset() восстанавливает поле
- */
 public class GameState {
     // Размеры спрайтов
     private static final int CAT_SIZE = 48;
     private static final int MOUSE_SIZE = 32;
     private static final int CHEESE_SIZE = 48;
-    private static final int HOLE_SIZE = 24;  // Обновлен размер норки
+    private static final int HOLE_SIZE = 24;
 
-    // Радиусы коллизий (уменьшены для более точного определения)
-    private static final int CAT_CATCH_RADIUS = 20;      // Радиус ловли мыши
-    private static final int MOUSE_PICKUP_RADIUS = 15;   // Радиус подбора сыра
-    private static final int HOLE_ENTER_RADIUS = 12;     // Уменьшен радиус входа в нору
+    // Радиусы коллизий
+    private static final int CAT_CATCH_RADIUS = 20;
+    private static final int MOUSE_PICKUP_RADIUS = 15;
+    private static final int HOLE_ENTER_RADIUS = 12;
 
-    private static final int TOTAL_CHEESE_TO_WIN = 3;
+    private int totalCheeseToWin = 3; // Переменная для количества сыра для победы
 
-    public static final int WIDTH  = 800;
+    public static final int WIDTH = 800;
     public static final int HEIGHT = 600;
 
     private int catX, catY;
@@ -34,13 +25,18 @@ public class GameState {
 
     private final Map<String, MouseInfo> miceMap = new HashMap<>();
     private final List<Point> cheeseList = new ArrayList<>();
-    private final List<Point> holes      = new ArrayList<>();
+    private final List<Point> holes = new ArrayList<>();
 
     private boolean gameOver = false;
-    private String winner    = null;
+    private String winner = null;
 
     public GameState() {
         initCheeseAndHoles();
+    }
+
+    // Метод для установки количества сыра для победы
+    public synchronized void setTotalCheeseToWin(int totalCheeseToWin) {
+        this.totalCheeseToWin = totalCheeseToWin;
     }
 
     /**
@@ -189,7 +185,7 @@ public class GameState {
         for (var mi : miceMap.values()) {
             totalDelivered += mi.carriedCheeseCount;
         }
-        if (totalDelivered >= TOTAL_CHEESE_TO_WIN) {
+        if (totalDelivered >= totalCheeseToWin) {
             gameOver = true;
             winner = "mice";
             System.out.println("Mice win by delivering enough cheese!");

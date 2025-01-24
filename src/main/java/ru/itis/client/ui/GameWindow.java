@@ -8,9 +8,6 @@ import java.awt.event.ActionEvent;
 import java.util.*;
 import java.util.List;
 
-/**
- * Лобби (верхняя панель) + Игра (центральная панель)
- */
 public class GameWindow extends JFrame {
     private JPanel lobbyPanel;
     private JLabel lobbyLabel;
@@ -21,14 +18,17 @@ public class GameWindow extends JFrame {
     private JButton startGameBtn;
     private JButton exitButton;
     private JButton kickPlayerBtn;
+    private JSpinner cheeseCountSpinner; // Спиннер для выбора количества сыра
 
     private final GamePanel gamePanel;
     private final GameClient client;
     private boolean gameStarted = false;
 
-    // Конструктор с name
-    public GameWindow(String host, int port, boolean isHost, String playerName) {
+    private ConnectionWindow connectionWindow; // Ссылка на окно подключения
+
+    public GameWindow(String host, int port, boolean isHost, String playerName, ConnectionWindow connectionWindow) {
         super(isHost ? "Cats & Mice (HOST)" : "Cats & Mice (CLIENT)");
+        this.connectionWindow = connectionWindow; // Сохраняем ссылку на окно подключения
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setLayout(new BorderLayout());
@@ -53,29 +53,25 @@ public class GameWindow extends JFrame {
         // set client
         gamePanel.setClient(client);
         gamePanel.requestFocusInWindow();
-
 //        setUndecorated(true);
 //        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setSize(990,800);
+        setSize(990, 800);
         setVisible(true);
-
-
-
     }
 
     private void createLobbyPanel(boolean isHost) {
         lobbyPanel = new JPanel(new BorderLayout());
         lobbyPanel.setPreferredSize(new Dimension(1000, 200));
-        
+
         // Добавляем градиентный фон для лобби
         lobbyPanel.setOpaque(false);
         lobbyPanel.setBackground(new Color(0, 0, 0, 80));
-        
+
         // Стилизуем кнопки
         UIManager.put("Button.background", new Color(70, 130, 180));
         UIManager.put("Button.foreground", Color.WHITE);
         UIManager.put("Button.font", new Font("Arial", Font.BOLD, 14));
-        
+
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
         lobbyLabel = new JLabel("Lobby (waiting for players...)");
         top.add(lobbyLabel);
@@ -92,13 +88,20 @@ public class GameWindow extends JFrame {
         makeCatBtn = new JButton("Make Selected Cat");
         startGameBtn = new JButton("Start Game");
         exitButton = new JButton("Exit");
-        kickPlayerBtn = new JButton("Kick Player"); // Новая кнопка
+        kickPlayerBtn = new JButton("Kick Player");
+
+        // Добавляем спиннер для выбора количества сыра (только для хоста)
+        if (isHost) {
+            cheeseCountSpinner = new JSpinner(new SpinnerNumberModel(3, 1, 20, 1)); // Начальное значение 3
+            bottom.add(new JLabel("Cheese Count:"));
+            bottom.add(cheeseCountSpinner);
+        }
 
         bottom.add(exitButton);
         bottom.add(randomRolesBtn);
         bottom.add(makeCatBtn);
         bottom.add(startGameBtn);
-        bottom.add(kickPlayerBtn); // Добавляем кнопку в панель
+        bottom.add(kickPlayerBtn);
         lobbyPanel.add(bottom, BorderLayout.SOUTH);
 
         add(lobbyPanel, BorderLayout.NORTH);
@@ -107,7 +110,7 @@ public class GameWindow extends JFrame {
             randomRolesBtn.setEnabled(false);
             makeCatBtn.setEnabled(false);
             startGameBtn.setEnabled(false);
-            kickPlayerBtn.setEnabled(false); // Кнопка кика доступна только хосту
+            kickPlayerBtn.setEnabled(false);
         }
 
         // Обработчики событий
@@ -115,14 +118,10 @@ public class GameWindow extends JFrame {
         randomRolesBtn.addActionListener(this::onRandomRoles);
         makeCatBtn.addActionListener(this::onMakeCat);
         startGameBtn.addActionListener(this::onStartGame);
-        kickPlayerBtn.addActionListener(this::onKickPlayer); // Обработчик для кнопки кика
-
-        // Добавляем тултипы
-        randomRolesBtn.setToolTipText("Случайно назначить роли игрокам");
-        makeCatBtn.setToolTipText("Сделать выбранного игрока котом");
-        startGameBtn.setToolTipText("Начать игру");
-        kickPlayerBtn.setToolTipText("Выгнать выбранного игрока");
+        kickPlayerBtn.addActionListener(this::onKickPlayer);
     }
+
+
 
     /**
      * Обработчик нажатия на кнопку "Kick Player".
@@ -184,17 +183,17 @@ public class GameWindow extends JFrame {
     private void onStartGame(ActionEvent e) {
         var pm = client.getPlayersMap();
         int size = pm.size();
-        if (size<2 || size>5) {
-            JOptionPane.showMessageDialog(this,"Need 2..5 players!","Cannot start",JOptionPane.WARNING_MESSAGE);
+        if (size < 2 || size > 5) {
+            JOptionPane.showMessageDialog(this, "Need 2..5 players!", "Cannot start", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        boolean catFound=false, mouseFound=false;
+        boolean catFound = false, mouseFound = false;
         for (GameClient.PlayerInfo r : pm.values()) {
-            if ("cat".equals(r.role)) catFound=true;
-            if ("mouse".equals(r.role)) mouseFound=true;
+            if ("cat".equals(r.role)) catFound = true;
+            if ("mouse".equals(r.role)) mouseFound = true;
         }
         if (!catFound || !mouseFound) {
-            JOptionPane.showMessageDialog(this,"Need at least 1 cat and 1 mouse!","Cannot start",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Need at least 1 cat and 1 mouse!", "Cannot start", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -239,10 +238,9 @@ public class GameWindow extends JFrame {
     private void onExitGame() {
         // Отключаемся от сервера
         client.disconnect();
-        // Закрываем окно
+        // Закрываем окно игры
         dispose();
-        if (client.isHost()) {
-            System.exit(0);
-        }
+        // Показываем окно подключения снова
+        connectionWindow.showConnectionWindow();
     }
 }
