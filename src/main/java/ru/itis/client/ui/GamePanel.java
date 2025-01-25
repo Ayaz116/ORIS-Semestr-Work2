@@ -133,10 +133,10 @@ public class GamePanel extends JPanel {
         if (!gameStarted) return;
 
         int vx = 0, vy = 0;
-        if (pressedKeys.contains(KeyEvent.VK_UP)) vy -= 2;
-        if (pressedKeys.contains(KeyEvent.VK_DOWN)) vy += 2;
-        if (pressedKeys.contains(KeyEvent.VK_LEFT)) vx -= 2;
-        if (pressedKeys.contains(KeyEvent.VK_RIGHT)) vx += 2;
+        if (pressedKeys.contains(KeyEvent.VK_UP)) vy -= 3;
+        if (pressedKeys.contains(KeyEvent.VK_DOWN)) vy += 3;
+        if (pressedKeys.contains(KeyEvent.VK_LEFT)) vx -= 3;
+        if (pressedKeys.contains(KeyEvent.VK_RIGHT)) vx += 3;
 
         // Шлём SET_VELOCITY
         client.sendSetVelocity(vx, vy);
@@ -163,58 +163,54 @@ public class GamePanel extends JPanel {
         // Рисуем фон
         spriteManager.drawBackground(g, w, h);
         
-        // Рисуем норы (32x32)
+        // Рисуем норы (48x48 вместо 32x32)
         for (Point hрPoint : holePoints) {
             int hx = (int) (hрPoint.x * scaleX);
             int hy = (int) (hрPoint.y * scaleY);
-            spriteManager.drawIdleSprites(g, "hole", hx - 16, hy - 16, 32, 32, 0);
+            spriteManager.drawIdleSprites(g, "hole", hx - 24, hy - 24, 48, 48, 0);
         }
         
-        // Рисуем сыр (32x32)
+        // Рисуем сыр (48x48 вместо 32x32)
         for (Point c : cheesePoints) {
             int cx = (int) (c.x * scaleX);
             int cy = (int) (c.y * scaleY);
-            spriteManager.drawIdleSprites(g, "cheese", cx - 16, cy - 16, 32, 32, 0);
+            spriteManager.drawIdleSprites(g, "cheese", cx - 24, cy - 24, 48, 48, 0);
         }
         
-        // Рисуем кота (64x64)
+        // Рисуем кота (80x80 вместо 64x64)
         int drawCatX = (int) (catX * scaleX);
         int drawCatY = (int) (catY * scaleY);
         String catAnim;
-
+        
         if (Math.abs(catVelX) > 0.1 || Math.abs(catVelY) > 0.1) {
             if (Math.abs(catVelX) > 0.1) {
                 catAnim = catVelX > 0 ? "cat_run_right" : "cat_run_left";
-                catLastFacingLeft = catVelX < 0; // Обновляем направление
+                catLastFacingLeft = catVelX < 0;
             } else {
                 catAnim = catLastFacingLeft ? "cat_run_left" : "cat_run_right";
             }
         } else {
-            if (catLastFacingLeft) catAnim = "LeftIdle";
-            else catAnim = "RightIdle";
+            catAnim = catLastFacingLeft ? "LeftIdle" : "RightIdle";
         }
-        spriteManager.drawIdleSprites(g, catAnim, drawCatX - 32, drawCatY - 32, 64, 64, 0);
+        spriteManager.drawIdleSprites(g, catAnim, drawCatX - 40, drawCatY - 40, 80, 80, 0);
         
-        // Рисуем мышей (32x32)
+        // Рисуем мышей (48x48 вместо 32x32)
         for (var mv : miceMap.values()) {
             int mx = (int) (mv.x * scaleX);
             int my = (int) (mv.y * scaleY);
             String mouseAnim;
             
             if (Math.abs(mv.velX) > 0.1 || Math.abs(mv.velY) > 0.1) {
-                // Если есть горизонтальное движение, определяем направление
                 if (Math.abs(mv.velX) > 0.1) {
                     mv.setLastFacingLeft(mv.velX < 0);
                 }
                 
-                // Используем сохранённое направление для анимации
                 if (mv.isLastFacingLeft()) {
                     mouseAnim = mv.carryingCheese ? "mouse_run_left_cheese" : "mouse_run_left";
                 } else {
                     mouseAnim = mv.carryingCheese ? "mouse_run_right_cheese" : "mouse_run_right";
                 }
             } else {
-                // В состоянии покоя используем сохранённое направление
                 if (mv.isLastFacingLeft()) {
                     mouseAnim = mv.carryingCheese ? "left_idle_cheese" : "left_idle";
                 } else {
@@ -225,7 +221,7 @@ public class GamePanel extends JPanel {
             if (!mv.alive) {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
             }
-            spriteManager.drawIdleSprites(g, mouseAnim, mx - 16, my - 16, 32, 32, 0);
+            spriteManager.drawIdleSprites(g, mouseAnim, mx - 24, my - 24, 48, 48, 0);
             if (!mv.alive) {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
             }

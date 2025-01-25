@@ -5,20 +5,24 @@ import java.util.*;
 
 public class GameState {
     // Размеры спрайтов
-    private static final int CAT_SIZE = 48;
-    private static final int MOUSE_SIZE = 32;
+    private static final int CAT_SIZE = 64;
+    private static final int MOUSE_SIZE = 48;
     private static final int CHEESE_SIZE = 48;
-    private static final int HOLE_SIZE = 24;
+    private static final int HOLE_SIZE = 32;
 
     // Радиусы коллизий
-    private static final int CAT_CATCH_RADIUS = 20;
-    private static final int MOUSE_PICKUP_RADIUS = 15;
-    private static final int HOLE_ENTER_RADIUS = 12;
+    private static final int CAT_CATCH_RADIUS = 25;
+    private static final int MOUSE_PICKUP_RADIUS = 20;
+    private static final int HOLE_ENTER_RADIUS = 25;
+
+    // Множители скорости
+    private static final double CAT_SPEED_MULTIPLIER = 1.5;    // Кот быстрее в 1.5 раза
+    private static final double MOUSE_SPEED_MULTIPLIER = 1.6;  // Мышь быстрее в 1.6 раза
 
     public static int totalCheeseToWin = 3; // Переменная для количества сыра для победы
 
-    public static final int WIDTH = 800;
-    public static final int HEIGHT = 600;
+    public static final int WIDTH = 1040;
+    public static final int HEIGHT = 780;
 
     private int catX, catY;
     private int catVx, catVy;
@@ -97,8 +101,8 @@ public class GameState {
         catY = y;
     }
     public synchronized void setCatVelocity(int vx, int vy) {
-        catVx = vx;
-        catVy = vy;
+        catVx = (int)(vx * CAT_SPEED_MULTIPLIER);
+        catVy = (int)(vy * CAT_SPEED_MULTIPLIER);
     }
     public synchronized void addMouse(String mouseId, int x, int y) {
         MouseInfo m = new MouseInfo();
@@ -113,8 +117,8 @@ public class GameState {
     public synchronized void setMouseVelocity(String mouseId, int vx, int vy) {
         MouseInfo mi = miceMap.get(mouseId);
         if (mi != null) {
-            mi.vx = vx;
-            mi.vy = vy;
+            mi.vx = (int)(vx * MOUSE_SPEED_MULTIPLIER);
+            mi.vy = (int)(vy * MOUSE_SPEED_MULTIPLIER);
         }
     }
 
