@@ -1,5 +1,6 @@
 package ru.itis.client;
 
+import ru.itis.client.ui.ConnectionWindow;
 import ru.itis.client.ui.MouseView;
 import ru.itis.model.GameState;
 import ru.itis.protocol.Message;
@@ -40,13 +41,15 @@ public class GameClient {
     // Модель лобби: {clientId -> PlayerInfo}
     private final Map<String, PlayerInfo> playersMap = new HashMap<>();
 
+    private ConnectionWindow connectionWindow; // Ссылка на окно подключения
 
-    public GameClient(String host, int port, GamePanel panel, boolean isHost, String playerName) {
+    public GameClient(String host, int port, GamePanel panel, boolean isHost, String playerName, ConnectionWindow connectionWindow) {
         this.host = host;
         this.port = port;
         this.gamePanel = panel;
         this.isHost = isHost;
         this.playerName = playerName;
+        this.connectionWindow = connectionWindow; // Сохраняем ссылку на окно подключения
     }
 
     public void setGameWindow(GameWindow gameWindow) {
@@ -117,6 +120,7 @@ public class GameClient {
         }
     }
 
+
     /**
      * Обработка отключения (кика или разрыва соединения).
      */
@@ -128,11 +132,13 @@ public class GameClient {
 
             // Закрываем окно игры
             if (gameWindow != null) {
-                gameWindow.dispose(); // Закрываем окно
+                gameWindow.dispose(); // Закрываем окно игры
             }
 
-            // Завершаем приложение
-            System.exit(0);
+            // Возвращаем игрока в окно подключения
+            if (connectionWindow != null) {
+                connectionWindow.showConnectionWindow(); // Показываем окно подключения
+            }
         });
     }
 
@@ -263,10 +269,7 @@ public class GameClient {
                 }
             } else if (part.startsWith("CAT|")) {
                 String coords = part.substring("CAT|".length());
-                System.out.println("====================================");
-                System.out.println(coords);
                 String[] xy = coords.split(",");
-                System.out.println(Arrays.toString(xy));
                 catX = Integer.parseInt(xy[0]);
                 catY = Integer.parseInt(xy[1]);
                 catVelX = Integer.parseInt(xy[2]);

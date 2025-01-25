@@ -150,7 +150,7 @@ public class GameServer {
 
     public void broadcastLobbyUpdate() {
         StringBuilder sb = new StringBuilder();
-        sb.append("HOST|").append(hostId==null?"none":hostId).append(";PLAYERS|");
+        sb.append("HOST|").append(hostId == null ? "none" : hostId).append(";PLAYERS|");
 
         for (ClientHandler ch : clients) {
             sb.append(ch.getClientId())
@@ -161,7 +161,7 @@ public class GameServer {
                     .append(";");
         }
         String data = sb.toString();
-        System.out.println("[Server] broadcastLobbyUpdate: "+data);
+        System.out.println("[Server] broadcastLobbyUpdate: " + data);
         broadcast(new Message(MessageType.LOBBY_UPDATE, data));
     }
 }

@@ -39,7 +39,7 @@ public class GameWindow extends JFrame {
         add(gamePanel, BorderLayout.CENTER);
 
         // client (теперь принимает name)
-        client = new GameClient(host, port, gamePanel, isHost, playerName);
+        client = new GameClient(host, port, gamePanel, isHost, playerName, connectionWindow); // Передаем connectionWindow
         client.setGameWindow(this); // Передаем ссылку на GameWindow
 
         createLobbyPanel(isHost);

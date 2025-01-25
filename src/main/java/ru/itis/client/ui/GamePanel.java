@@ -14,9 +14,11 @@ import ru.itis.model.GameState;
 import ru.itis.client.ui.sprites.SpriteManager;
 
 public class GamePanel extends JPanel {
+    private long gameTime = 0;
+    private int totalScore = 0;
     private int catX, catY;
     private double catVelX = 0, catVelY = 0;
-    private boolean lastFacingLeft = false; // Запоминаем последнее направление
+    private boolean catLastFacingLeft = false; // Запоминаем последнее направление
     private final Map<String, MouseView> miceMap = new ConcurrentHashMap<>();
     private final List<Point> cheesePoints = new CopyOnWriteArrayList<>();
     private final List<Point> holePoints = new CopyOnWriteArrayList<>();
@@ -35,10 +37,14 @@ public class GamePanel extends JPanel {
     public GamePanel() {
         setFocusable(true);
         spriteManager = SpriteManager.getInstance();
-        
-        // Добавляем таймер для анимации
+
         animationTimer = new Timer(16, e -> {
             spriteManager.updateAnimation();
+            gameTime += 16;
+            // Обновляем общий счет
+            totalScore = miceMap.values().stream()
+                    .mapToInt(mv -> mv.score)
+                    .sum();
             repaint();
         });
         animationTimer.start();
@@ -153,14 +159,14 @@ public class GamePanel extends JPanel {
         for (Point hрPoint : holePoints) {
             int hx = (int) (hрPoint.x * scaleX);
             int hy = (int) (hрPoint.y * scaleY);
-            spriteManager.drawSprite(g, "hole", hx - 16, hy - 16, 32, 32, 0);
+            spriteManager.drawIdleSprites(g, "hole", hx - 16, hy - 16, 32, 32, 0);
         }
         
         // Рисуем сыр (32x32)
         for (Point c : cheesePoints) {
             int cx = (int) (c.x * scaleX);
             int cy = (int) (c.y * scaleY);
-            spriteManager.drawSprite(g, "cheese", cx - 16, cy - 16, 32, 32, 0);
+            spriteManager.drawIdleSprites(g, "cheese", cx - 16, cy - 16, 32, 32, 0);
         }
         
         // Рисуем кота (64x64)
@@ -171,14 +177,15 @@ public class GamePanel extends JPanel {
         if (Math.abs(catVelX) > 0.1 || Math.abs(catVelY) > 0.1) {
             if (Math.abs(catVelX) > 0.1) {
                 catAnim = catVelX > 0 ? "cat_run_right" : "cat_run_left";
-                lastFacingLeft = catVelX < 0;
+                catLastFacingLeft = catVelX < 0;
             } else {
-                catAnim = lastFacingLeft ? "cat_run_left" : "cat_run_right";
+                catAnim = catLastFacingLeft ? "cat_run_left" : "cat_run_right";
             }
         } else {
-            catAnim = "cat_idle";
+            if (catLastFacingLeft) catAnim = "LeftIdle";
+            else catAnim = "RightIdle";
         }
-        spriteManager.drawSprite(g, catAnim, drawCatX - 32, drawCatY - 32, 64, 64, 0);
+        spriteManager.drawIdleSprites(g, catAnim, drawCatX - 32, drawCatY - 32, 64, 64, 0);
         
         // Рисуем мышей (32x32)
         for (var mv : miceMap.values()) {
@@ -189,28 +196,25 @@ public class GamePanel extends JPanel {
             if (Math.abs(mv.velX) > 0.1 || Math.abs(mv.velY) > 0.1) {
                 if (Math.abs(mv.velX) > 0.1) {
                     mouseAnim = mv.velX > 0 ? "mouse_run_right" : "mouse_run_left";
+                    mv.lastFacingLeft = mv.velX < 0;
                 } else {
                     mouseAnim = mv.lastFacingLeft ? "mouse_run_left" : "mouse_run_right";
                 }
             } else {
-                mouseAnim = "mouse_idle";
+                if (mv.lastFacingLeft) mouseAnim = "left_idle";
+                else mouseAnim = "right_idle";
             }
             
             if (!mv.alive) {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
             }
-            spriteManager.drawSprite(g, mouseAnim, mx - 16, my - 16, 32, 32, 0);
+            spriteManager.drawIdleSprites(g, mouseAnim, mx - 16, my - 16, 32, 32, 0);
             if (!mv.alive) {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
             }
-            
-            // Отображаем счет над мышкой
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 12));
-            FontMetrics fm = g.getFontMetrics();
-            String scoreText = "score=" + mv.score;
-            g.drawString(scoreText, mx - fm.stringWidth(scoreText)/2, my - 20);
         }
+
+        spriteManager.drawAnimatedScore(g, getWidth() - 100, 50, totalScore, gameTime);
 
         // Добавляем эффект свечения для Game Over
         if (gameOver) {
