@@ -93,6 +93,14 @@ public class GamePanel extends JPanel {
         holePoints.clear();
         holePoints.addAll(newHoles);
 
+        for (var mv : miceMap.values()) {
+            if (Math.abs(mv.velX) > 0.1 || Math.abs(mv.velY) > 0.1) {
+                if (Math.abs(mv.velX) > 0.1) {
+                    mv.setLastFacingLeft(mv.velX < 0); // Обновляем только если velX изменился
+                }
+            }
+        }
+
         repaint(); // Запускаем перерисовку
     }
 
@@ -173,11 +181,11 @@ public class GamePanel extends JPanel {
         int drawCatX = (int) (catX * scaleX);
         int drawCatY = (int) (catY * scaleY);
         String catAnim;
-        
+
         if (Math.abs(catVelX) > 0.1 || Math.abs(catVelY) > 0.1) {
             if (Math.abs(catVelX) > 0.1) {
                 catAnim = catVelX > 0 ? "cat_run_right" : "cat_run_left";
-                catLastFacingLeft = catVelX < 0;
+                catLastFacingLeft = catVelX < 0; // Обновляем направление
             } else {
                 catAnim = catLastFacingLeft ? "cat_run_left" : "cat_run_right";
             }
@@ -194,17 +202,26 @@ public class GamePanel extends JPanel {
             String mouseAnim;
             
             if (Math.abs(mv.velX) > 0.1 || Math.abs(mv.velY) > 0.1) {
+                // Если есть горизонтальное движение, определяем направление
                 if (Math.abs(mv.velX) > 0.1) {
-                    mouseAnim = mv.velX > 0 ? "mouse_run_right" : "mouse_run_left";
-                    mv.lastFacingLeft = mv.velX < 0;
+                    mv.setLastFacingLeft(mv.velX < 0);
+                }
+                
+                // Используем сохранённое направление для анимации
+                if (mv.isLastFacingLeft()) {
+                    mouseAnim = mv.carryingCheese ? "mouse_run_left_cheese" : "mouse_run_left";
                 } else {
-                    mouseAnim = mv.lastFacingLeft ? "mouse_run_left" : "mouse_run_right";
+                    mouseAnim = mv.carryingCheese ? "mouse_run_right_cheese" : "mouse_run_right";
                 }
             } else {
-                if (mv.lastFacingLeft) mouseAnim = "left_idle";
-                else mouseAnim = "right_idle";
+                // В состоянии покоя используем сохранённое направление
+                if (mv.isLastFacingLeft()) {
+                    mouseAnim = mv.carryingCheese ? "left_idle_cheese" : "left_idle";
+                } else {
+                    mouseAnim = mv.carryingCheese ? "right_idle_cheese" : "right_idle";
+                }
             }
-            
+
             if (!mv.alive) {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
             }

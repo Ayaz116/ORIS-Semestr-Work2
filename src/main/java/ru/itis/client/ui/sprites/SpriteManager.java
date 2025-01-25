@@ -71,6 +71,19 @@ public class SpriteManager {
             BufferedImage mouseRunLeftSheet = ImageIO.read(getClass().getResourceAsStream("/sprites/mouse/RunLeft.png"));
             animations.put("mouse_run_left", drawIdleSprites(mouseRunLeftSheet));
             
+            // Загружаем спрайты мыши с сыром
+            BufferedImage mouseLeftIdleCheeseSheet = ImageIO.read(getClass().getResourceAsStream("/sprites/mouse/LeftIdleCheese.png"));
+            animations.put("left_idle_cheese", drawIdleSprites(mouseLeftIdleCheeseSheet));
+
+            BufferedImage mouseRightIdleCheeseSheet = ImageIO.read(getClass().getResourceAsStream("/sprites/mouse/RigthIdleCheese.png"));
+            animations.put("right_idle_cheese", drawIdleSprites(mouseRightIdleCheeseSheet));
+
+            BufferedImage mouseRunRightCheeseSheet = ImageIO.read(getClass().getResourceAsStream("/sprites/mouse/RunRightCheese.png"));
+            animations.put("mouse_run_right_cheese", drawIdleSprites(mouseRunRightCheeseSheet));
+            
+            BufferedImage mouseRunLeftCheeseSheet = ImageIO.read(getClass().getResourceAsStream("/sprites/mouse/RunLeftCheese.png"));
+            animations.put("mouse_run_left_cheese", drawIdleSprites(mouseRunLeftCheeseSheet));
+            
             // Загружаем статичные спрайты
             BufferedImage cheeseImg = ImageIO.read(getClass().getResourceAsStream("/sprites/items/cheese.png"));
             if (cheeseImg != null) {
@@ -91,7 +104,7 @@ public class SpriteManager {
     private List<BufferedImage> drawWalkSprites(BufferedImage RunSheet) {
         List<BufferedImage> Run = new ArrayList<>();
         if (RunSheet != null) {
-            int frameWidth = RunSheet.getWidth() / 6; // 8 кадров для бега
+            int frameWidth = RunSheet.getWidth() / 6; // 6 кадров для бега
             int frameHeight = RunSheet.getHeight();
             for (int i = 0; i < 6; i++) {
                 Run.add(RunSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight));
@@ -103,7 +116,7 @@ public class SpriteManager {
     private List<BufferedImage> drawIdleSprites(BufferedImage RunSheet) {
         List<BufferedImage> Run = new ArrayList<>();
         if (RunSheet != null) {
-            int frameWidth = RunSheet.getWidth() / 4; // 8 кадров для бега
+            int frameWidth = RunSheet.getWidth() / 4; // 4 кадра для бега
             int frameHeight = RunSheet.getHeight();
             for (int i = 0; i < 4; i++) {
                 Run.add(RunSheet.getSubimage(i * frameWidth, 0, frameWidth, frameHeight));

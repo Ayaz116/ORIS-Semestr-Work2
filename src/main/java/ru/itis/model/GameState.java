@@ -198,11 +198,16 @@ public class GameState {
         for (var e : miceMap.entrySet()) {
             MouseInfo m = e.getValue();
             if (!m.alive) continue;
+            
+            // Обновляем направление только при горизонтальном движении
+            if (Math.abs(m.vx) > 0.1) {
+                m.lastFacingLeft = m.vx < 0;
+            }
+            
             double d = dist(catX, catY, m.x, m.y);
             if (d <= CAT_CATCH_RADIUS) {
                 m.alive = false;
                 m.carryingCheese = false;
-                System.out.println("Cat caught mouse " + e.getKey());
             }
         }
         boolean anyAlive = false;
@@ -249,5 +254,6 @@ public class GameState {
         public boolean alive;
         public boolean carryingCheese;
         public int carriedCheeseCount;
+        public boolean lastFacingLeft;
     }
 }

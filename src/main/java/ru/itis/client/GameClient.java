@@ -277,14 +277,17 @@ public class GameClient {
             } else if (part.startsWith("MOUSE|")) {
                 String data = part.substring("MOUSE|".length());
                 String[] arr = data.split(",");
-                if (arr.length == 6) {
+                if (arr.length == 9) {
                     String mid = arr[0];
                     int mx = Integer.parseInt(arr[1]);
                     int my = Integer.parseInt(arr[2]);
-                    boolean alive = Boolean.parseBoolean(arr[3]);
-                    boolean carrying = Boolean.parseBoolean(arr[4]);
-                    int sc = Integer.parseInt(arr[5]);
-                    newMice.put(mid, new MouseView(mx, my, alive, carrying, sc));
+                    int mvx = Integer.parseInt(arr[3]);
+                    int mvy = Integer.parseInt(arr[4]);
+                    boolean alive = Boolean.parseBoolean(arr[5]);
+                    boolean carrying = Boolean.parseBoolean(arr[6]);
+                    int sc = Integer.parseInt(arr[7]);
+                    boolean lastFacingLeft = Boolean.parseBoolean(arr[8]);
+                    newMice.put(mid, new MouseView(mx, my, mvx, mvy, alive, carrying, sc, lastFacingLeft));
                 }
             } else if (part.startsWith("CHEESE|")) {
                 // Обработка всех сыров

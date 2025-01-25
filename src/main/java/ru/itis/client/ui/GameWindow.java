@@ -69,7 +69,7 @@ public class GameWindow extends JFrame {
         lobbyPanel.setBackground(new Color(0, 0, 0, 80));
 
         // Стилизуем кнопки
-        UIManager.put("Button.background", new Color(70, 130, 180));
+        UIManager.put("Button.background", new Color(184, 103, 8));
         UIManager.put("Button.foreground", Color.WHITE);
         UIManager.put("Button.font", new Font("Arial", Font.BOLD, 14));
 

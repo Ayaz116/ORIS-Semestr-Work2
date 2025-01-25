@@ -98,9 +98,11 @@ public class GameServer {
             GameState.MouseInfo mi = e.getValue();
             sb.append(";MOUSE|").append(mid).append(",")
                     .append(mi.x).append(",").append(mi.y).append(",")
+                    .append(mi.vx).append(",").append(mi.vy).append(",")
                     .append(mi.alive).append(",")
                     .append(mi.carryingCheese).append(",")
-                    .append(mi.carriedCheeseCount);
+                    .append(mi.carriedCheeseCount).append(",")
+                    .append(mi.lastFacingLeft);
         }
 
         var cheese = gameState.getCheeseList();
