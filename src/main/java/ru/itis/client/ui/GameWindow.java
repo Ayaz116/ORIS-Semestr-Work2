@@ -1,6 +1,7 @@
 package ru.itis.client.ui;
 
 import ru.itis.client.GameClient;
+import ru.itis.model.GameState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -197,7 +198,7 @@ public class GameWindow extends JFrame {
             return;
         }
 
-        client.startGame();
+        client.startGame((Integer) cheeseCountSpinner.getValue());
     }
 
     // ========== Методы, которые вызывает client при LOBBY_UPDATE / START_GAME / RESET_LOBBY

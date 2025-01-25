@@ -15,7 +15,7 @@ public class GameState {
     private static final int MOUSE_PICKUP_RADIUS = 15;
     private static final int HOLE_ENTER_RADIUS = 12;
 
-    private int totalCheeseToWin = 3; // Переменная для количества сыра для победы
+    public static int totalCheeseToWin = 3; // Переменная для количества сыра для победы
 
     public static final int WIDTH = 800;
     public static final int HEIGHT = 600;
@@ -34,10 +34,7 @@ public class GameState {
         initCheeseAndHoles();
     }
 
-    // Метод для установки количества сыра для победы
-    public synchronized void setTotalCheeseToWin(int totalCheeseToWin) {
-        this.totalCheeseToWin = totalCheeseToWin;
-    }
+
 
     /**
      * Создаём 2 точки сыра (центр±40) и 5 норок (четыре угла + центр нижней границы).
@@ -90,6 +87,10 @@ public class GameState {
     }
 
     // =========== Установка позиций ===========
+
+    public synchronized void setTotalCheeseToWin(int total) {
+        totalCheeseToWin = total;
+    }
 
     public synchronized void setCatPosition(int x, int y) {
         catX = x;
@@ -223,6 +224,7 @@ public class GameState {
     }
 
     // =========== Геттеры ===========
+
     public synchronized boolean isGameOver() { return gameOver; }
     public synchronized String getWinner() { return winner; }
 

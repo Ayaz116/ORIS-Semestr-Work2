@@ -54,7 +54,7 @@ public class ClientHandler extends Thread {
                             handleAssignRole(msg.getContent());
                             break;
                         case START_GAME:
-                            handleStartGame();
+                            handleStartGame(msg.getContent());
                             break;
                         case KICK_PLAYER:
                             handleKickPlayer(msg.getContent());
@@ -280,7 +280,7 @@ public class ClientHandler extends Thread {
     /**
      * START_GAME
      */
-    private void handleStartGame() {
+    private void handleStartGame(String content) {
         if (!clientId.equals(server.getHostId())) return;
         // Проверяем, есть ли минимум 1 кот и 1 мышь
         if (!hasAtLeastOneCatAndMouse()) {
@@ -291,6 +291,7 @@ public class ClientHandler extends Thread {
         server.broadcast(new Message(MessageType.START_GAME, "start"));
         server.getGameState().setCatPosition(GameState.WIDTH / 2, GameState.HEIGHT / 2);
         GameState gameState = server.getGameState();
+        gameState.setTotalCheeseToWin(Integer.parseInt(content));
         Random rnd = new Random();
         List<Point> holes = gameState.getHoles();
         for (ClientHandler ch : server.getClients()) {

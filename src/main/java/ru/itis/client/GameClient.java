@@ -330,9 +330,9 @@ public class GameClient {
     /**
      * Хост нажимает "Start Game"
      */
-    public void startGame() {
+    public void startGame(int n) {
         if (!isHost) return;
-        sendMessage(new Message(MessageType.START_GAME, "start"));
+        sendMessage(new Message(MessageType.START_GAME, String.valueOf(n)));
     }
 
     /**
