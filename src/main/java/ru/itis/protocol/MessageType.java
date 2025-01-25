@@ -9,5 +9,5 @@ public enum MessageType {
     ASSIGN_ROLE,
     START_GAME,
     RESET_LOBBY,
-    KICK_PLAYER // Новый тип сообщения для кика игрока
+    KICK_PLAYER
 }

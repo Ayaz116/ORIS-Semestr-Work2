@@ -18,19 +18,18 @@ public class GamePanel extends JPanel {
     private int totalScore = 0;
     private int catX, catY;
     private double catVelX = 0, catVelY = 0;
-    private boolean catLastFacingLeft = false; // Запоминаем последнее направление
+    private boolean catLastFacingLeft = false;
     private final Map<String, MouseView> miceMap = new ConcurrentHashMap<>();
     private final List<Point> cheesePoints = new CopyOnWriteArrayList<>();
     private final List<Point> holePoints = new CopyOnWriteArrayList<>();
     private final Set<Integer> pressedKeys = new HashSet<>();
 
     private boolean gameOver = false;
-    private String winner = "none";
-    private boolean gameStarted = false; // Флаг начала игры
+    private String winner = "никто";
+    private boolean gameStarted = false;
     private SpriteManager spriteManager;
 
     private GameClient client;
-    private long lastUpdateTime;
 
     private Timer animationTimer;
 
@@ -41,7 +40,6 @@ public class GamePanel extends JPanel {
         animationTimer = new Timer(16, e -> {
             spriteManager.updateAnimation();
             gameTime += 16;
-            // Обновляем общий счет
             totalScore = miceMap.values().stream()
                     .mapToInt(mv -> mv.score)
                     .sum();
@@ -68,9 +66,6 @@ public class GamePanel extends JPanel {
         this.client = client;
     }
 
-    /**
-     * Вызывается при получении STATE от сервера.
-     */
     public synchronized void updateState(boolean gOver, String winner,
                                          int catX, int catY,
                                          double catVelX, double catVelY,
@@ -96,41 +91,31 @@ public class GamePanel extends JPanel {
         for (var mv : miceMap.values()) {
             if (Math.abs(mv.velX) > 0.1 || Math.abs(mv.velY) > 0.1) {
                 if (Math.abs(mv.velX) > 0.1) {
-                    mv.setLastFacingLeft(mv.velX < 0); // Обновляем только если velX изменился
+                    mv.setLastFacingLeft(mv.velX < 0);
                 }
             }
         }
-
-        repaint(); // Запускаем перерисовку
+        repaint();
     }
 
-    /**
-     * Когда сервер присылает START_GAME, клиент вызывает этот метод,
-     * чтобы локально выставить флаг, разрешающий отрисовку кота/мышей.
-     */
     public synchronized void setGameStarted(boolean started) {
         this.gameStarted = started;
         repaint();
     }
 
-    /**
-     * Сброс (например, при RESET_LOBBY) — снова выставляем false,
-     * чтобы не рисовать кота/мышей.
-     */
     public synchronized void resetState() {
         catX = catY = 0;
         miceMap.clear();
         cheesePoints.clear();
         holePoints.clear();
         gameOver = false;
-        winner = "none";
+        winner = "никто";
         gameStarted = false;
         repaint();
     }
 
     private void recalcVelocity() {
-        if (client == null) return;
-        if (!gameStarted) return;
+        if (client == null || !gameStarted) return;
 
         int vx = 0, vy = 0;
         if (pressedKeys.contains(KeyEvent.VK_UP)) vy -= 3;
@@ -138,7 +123,6 @@ public class GamePanel extends JPanel {
         if (pressedKeys.contains(KeyEvent.VK_LEFT)) vx -= 3;
         if (pressedKeys.contains(KeyEvent.VK_RIGHT)) vx += 3;
 
-        // Шлём SET_VELOCITY
         client.sendSetVelocity(vx, vy);
     }
 
@@ -150,34 +134,30 @@ public class GamePanel extends JPanel {
             spriteManager.drawBackground(g, getWidth(), getHeight());
             return;
         }
-        
+
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-        
+
         int w = getWidth();
         int h = getHeight();
         float scaleX = (float) w / GameState.WIDTH;
         float scaleY = (float) h / GameState.HEIGHT;
-        
-        // Рисуем фон
+
         spriteManager.drawBackground(g, w, h);
         
-        // Рисуем норы (48x48 вместо 32x32)
         for (Point hрPoint : holePoints) {
             int hx = (int) (hрPoint.x * scaleX);
             int hy = (int) (hрPoint.y * scaleY);
-            spriteManager.drawIdleSprites(g, "hole", hx - 24, hy - 24, 48, 48, 0);
+            spriteManager.drawSpriteWithShadow(g, "hole", hx - 24, hy - 24, 48, 48, 0);
         }
         
-        // Рисуем сыр (48x48 вместо 32x32)
         for (Point c : cheesePoints) {
             int cx = (int) (c.x * scaleX);
             int cy = (int) (c.y * scaleY);
-            spriteManager.drawIdleSprites(g, "cheese", cx - 24, cy - 24, 48, 48, 0);
+            spriteManager.drawSpriteWithShadow(g, "cheese", cx - 24, cy - 24, 48, 48, 0);
         }
         
-        // Рисуем кота (80x80 вместо 64x64)
         int drawCatX = (int) (catX * scaleX);
         int drawCatY = (int) (catY * scaleY);
         String catAnim;
@@ -192,9 +172,8 @@ public class GamePanel extends JPanel {
         } else {
             catAnim = catLastFacingLeft ? "LeftIdle" : "RightIdle";
         }
-        spriteManager.drawIdleSprites(g, catAnim, drawCatX - 40, drawCatY - 40, 80, 80, 0);
+        spriteManager.drawSpriteWithShadow(g, catAnim, drawCatX - 40, drawCatY - 40, 80, 80, 0);
         
-        // Рисуем мышей (48x48 вместо 32x32)
         for (var mv : miceMap.values()) {
             int mx = (int) (mv.x * scaleX);
             int my = (int) (mv.y * scaleY);
@@ -221,7 +200,7 @@ public class GamePanel extends JPanel {
             if (!mv.alive) {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
             }
-            spriteManager.drawIdleSprites(g, mouseAnim, mx - 24, my - 24, 48, 48, 0);
+            spriteManager.drawSpriteWithShadow(g, mouseAnim, mx - 24, my - 24, 48, 48, 0);
             if (!mv.alive) {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
             }
@@ -229,13 +208,12 @@ public class GamePanel extends JPanel {
 
         spriteManager.drawAnimatedScore(g, getWidth() - 100, 50, totalScore, gameTime);
 
-        // Добавляем эффект свечения для Game Over
         if (gameOver) {
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
             g2d.setColor(new Color(0, 0, 0, 128));
             g2d.fillRect(0, 0, getWidth(), getHeight());
 
-            String text = "Game Over! Winner: " + winner;
+            String text = "Игра окончена! Победитель: " + winner;
             g2d.setFont(new Font("Arial", Font.BOLD, 32));
             FontMetrics fm = g2d.getFontMetrics();
             int textWidth = fm.stringWidth(text);

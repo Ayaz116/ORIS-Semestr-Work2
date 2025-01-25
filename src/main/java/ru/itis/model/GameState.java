@@ -4,22 +4,16 @@ import java.awt.Point;
 import java.util.*;
 
 public class GameState {
-    // Размеры спрайтов
-    private static final int CAT_SIZE = 64;
-    private static final int MOUSE_SIZE = 48;
-    private static final int CHEESE_SIZE = 48;
     private static final int HOLE_SIZE = 32;
 
-    // Радиусы коллизий
     private static final int CAT_CATCH_RADIUS = 25;
     private static final int MOUSE_PICKUP_RADIUS = 20;
     private static final int HOLE_ENTER_RADIUS = 25;
 
-    // Множители скорости
-    private static final double CAT_SPEED_MULTIPLIER = 1.5;    // Кот быстрее в 1.5 раза
-    private static final double MOUSE_SPEED_MULTIPLIER = 1.6;  // Мышь быстрее в 1.6 раза
+    private static final double CAT_SPEED_MULTIPLIER = 1.5;
+    private static final double MOUSE_SPEED_MULTIPLIER = 1.6;
 
-    public static int totalCheeseToWin = 3; // Переменная для количества сыра для победы
+    public static int totalCheeseToWin = 3;
 
     public static final int WIDTH = 1040;
     public static final int HEIGHT = 780;
@@ -38,50 +32,35 @@ public class GameState {
         initCheeseAndHoles();
     }
 
-
-
-    /**
-     * Создаём 2 точки сыра (центр±40) и 5 норок (четыре угла + центр нижней границы).
-     */
     private void initCheeseAndHoles() {
         cheeseList.clear();
         int cx = WIDTH / 2;
         int cy = HEIGHT / 2;
         
-        // Сыр теперь чуть дальше друг от друга
         cheeseList.add(new Point(cx - 60, cy));
         cheeseList.add(new Point(cx + 60, cy));
 
         holes.clear();
-        // Норки теперь ближе к краям с учетом нового размера
-        holes.add(new Point(WIDTH / 2, HOLE_SIZE + 5));             // верх
-        holes.add(new Point(WIDTH / 2, HEIGHT - HOLE_SIZE - 5));    // низ
-        holes.add(new Point(HOLE_SIZE + 5, HEIGHT / 2));           // лево
-        holes.add(new Point(WIDTH - HOLE_SIZE - 5, HEIGHT / 2));   // право
+        holes.add(new Point(WIDTH / 2, HOLE_SIZE + 5));
+        holes.add(new Point(WIDTH / 2, HEIGHT - HOLE_SIZE - 5));
+        holes.add(new Point(HOLE_SIZE + 5, HEIGHT / 2));
+        holes.add(new Point(WIDTH - HOLE_SIZE - 5, HEIGHT / 2));
     }
 
-    /**
-     * reset(): кот/мыши обнуляются, сыр/норки восстанавливаются.
-     */
     public synchronized void reset() {
-        catX = WIDTH / 2; // Кот в центре по X
-        catY = HEIGHT / 2; // Кот в центре по Y
+        catX = WIDTH / 2;
+        catY = HEIGHT / 2;
         catVx = catVy = 0;
-        miceMap.clear(); // Очищаем список мышек
+        miceMap.clear();
         gameOver = false;
         winner = null;
-
-        initCheeseAndHoles(); // Восстанавливаем сыр и норы
-
-        // Добавляем мышек рядом с норами
+        initCheeseAndHoles();
         Random rnd = new Random();
         List<Point> holes = getHoles();
         for (String mouseId : miceMap.keySet()) {
-            Point hole = holes.get(rnd.nextInt(holes.size())); // Выбираем случайную нору
-            int x = hole.x + rnd.nextInt(41) - 20; // Случайное смещение относительно норы
-            int y = hole.y + rnd.nextInt(41) - 20; // Случайное смещение относительно норы
-
-            // Ограничиваем координаты, чтобы мышь не выходила за пределы экрана
+            Point hole = holes.get(rnd.nextInt(holes.size()));
+            int x = hole.x + rnd.nextInt(41) - 20;
+            int y = hole.y + rnd.nextInt(41) - 20;
             x = Math.max(0, Math.min(WIDTH, x));
             y = Math.max(0, Math.min(HEIGHT, y));
 
@@ -89,8 +68,6 @@ public class GameState {
             miceMap.get(mouseId).y = y;
         }
     }
-
-    // =========== Установка позиций ===========
 
     public synchronized void setTotalCheeseToWin(int total) {
         totalCheeseToWin = total;
@@ -122,14 +99,10 @@ public class GameState {
         }
     }
 
-    // =========== Движение/обновление ===========
     public synchronized void updatePositions() {
-        // Кот
         catX += catVx;
         catY += catVy;
         clampCat();
-
-        // Мыши
         for (MouseInfo mi : miceMap.values()) {
             if (!mi.alive) continue;
             mi.x += mi.vx;
@@ -157,7 +130,6 @@ public class GameState {
         if (mi.y > HEIGHT) mi.y = HEIGHT;
     }
 
-    // =========== Подбор сыра ===========
     private void pickUpCheeseIfPossible(MouseInfo mi) {
         if (mi.carryingCheese) return;
         for (Point c : cheeseList) {
@@ -170,7 +142,6 @@ public class GameState {
         }
     }
 
-    // =========== Сдача сыра в нору ===========
     private void dropCheeseIfInHole(MouseInfo mi) {
         if (!mi.carryingCheese) return;
         for (Point h : holes) {
@@ -184,7 +155,7 @@ public class GameState {
         }
     }
 
-    // =========== Проверка победы мышей ===========
+
     private void checkIfMiceWin() {
         int totalDelivered = 0;
         for (var mi : miceMap.values()) {
@@ -197,17 +168,16 @@ public class GameState {
         }
     }
 
-    // =========== Кот ловит мышей ===========
+
     private void checkCatCatchesMice() {
         for (var e : miceMap.entrySet()) {
             MouseInfo m = e.getValue();
             if (!m.alive) continue;
-            
-            // Обновляем направление только при горизонтальном движении
+
             if (Math.abs(m.vx) > 0.1) {
                 m.lastFacingLeft = m.vx < 0;
             }
-            
+
             double d = dist(catX, catY, m.x, m.y);
             if (d <= CAT_CATCH_RADIUS) {
                 m.alive = false;
@@ -232,26 +202,6 @@ public class GameState {
         return Math.hypot(x2 - x1, y2 - y1);
     }
 
-    // =========== Геттеры ===========
-
-    public synchronized boolean isGameOver() { return gameOver; }
-    public synchronized String getWinner() { return winner; }
-
-    public synchronized int getCatX() { return catX; }
-    public synchronized int getCatY() { return catY; }
-    public synchronized int getCatVelX() { return catVx; }
-    public synchronized int getCatVelY() { return catVy; }
-    public synchronized Map<String, MouseInfo> getAllMice() {
-        return new HashMap<>(miceMap);
-    }
-    public synchronized List<Point> getCheeseList() {
-        return new ArrayList<>(cheeseList);
-    }
-    public synchronized List<Point> getHoles() {
-        return new ArrayList<>(holes);
-    }
-
-    // =========== MouseInfo ===========
     public static class MouseInfo {
         public int x, y;
         public int vx, vy;
@@ -260,4 +210,14 @@ public class GameState {
         public int carriedCheeseCount;
         public boolean lastFacingLeft;
     }
+
+    public synchronized boolean isGameOver() { return gameOver; }
+    public synchronized String getWinner() { return winner; }
+    public synchronized int getCatX() { return catX; }
+    public synchronized int getCatY() { return catY; }
+    public synchronized int getCatVelX() { return catVx; }
+    public synchronized int getCatVelY() { return catVy; }
+    public synchronized Map<String, MouseInfo> getAllMice() { return new HashMap<>(miceMap); }
+    public synchronized List<Point> getCheeseList() { return new ArrayList<>(cheeseList); }
+    public synchronized List<Point> getHoles() { return new ArrayList<>(holes); }
 }

@@ -16,10 +16,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * Клиент, обрабатывающий лобби (LOBBY_UPDATE), назначение ролей (ASSIGN_ROLE),
- * старт игры (START_GAME), сброс игры (RESET_LOBBY) и т.д.
- */
+
 public class GameClient {
     private final String host;
     private final int port;
@@ -34,14 +31,11 @@ public class GameClient {
     private boolean isHost;
     private boolean gameStarted = false;
     private String myRole = "pending";
-
-    // Имя игрока
     private final String playerName;
 
-    // Модель лобби: {clientId -> PlayerInfo}
     private final Map<String, PlayerInfo> playersMap = new HashMap<>();
 
-    private ConnectionWindow connectionWindow; // Ссылка на окно подключения
+    private ConnectionWindow connectionWindow;
 
     public GameClient(String host, int port, GamePanel panel, boolean isHost, String playerName, ConnectionWindow connectionWindow) {
         this.host = host;
@@ -49,38 +43,26 @@ public class GameClient {
         this.gamePanel = panel;
         this.isHost = isHost;
         this.playerName = playerName;
-        this.connectionWindow = connectionWindow; // Сохраняем ссылку на окно подключения
+        this.connectionWindow = connectionWindow;
     }
 
     public void setGameWindow(GameWindow gameWindow) {
         this.gameWindow = gameWindow;
     }
 
-    /**
-     * Подключаемся к серверу, отправляем CONNECT (например, "host|Alex" или "pending|Bob").
-     */
     public void connect(String content) {
         try {
             socket = new Socket(host, port);
             out = new ObjectOutputStream(socket.getOutputStream());
             in  = new ObjectInputStream(socket.getInputStream());
             running.set(true);
-
-            // Отправляем CONNECT
             sendMessage(new Message(MessageType.CONNECT, content));
-
-            // Стартуем поток чтения
             listenerThread = new Thread(this::listenServer);
             listenerThread.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-    /**
-     * Основной цикл приёма сообщений от сервера.
-     */
-    private boolean kicked = false; // Флаг для отслеживания кика
 
     private void listenServer() {
         while (running.get()) {
@@ -105,11 +87,10 @@ public class GameClient {
                     case STATE:
                         parseAndUpdateState(msg.getContent());
                         break;
-                    case DISCONNECT: // Обработка отключения (кика)
+                    case DISCONNECT:
                         handleDisconnect(msg.getContent());
                         break;
                     default:
-                        // Игнорируем остальные
                 }
             } catch (IOException | ClassNotFoundException e) {
                 String errorMessage = e.getMessage() != null ? e.getMessage() : "Unknown error";
@@ -121,70 +102,40 @@ public class GameClient {
     }
 
 
-    /**
-     * Обработка отключения (кика или разрыва соединения).
-     */
     private void handleDisconnect(String message) {
         System.out.println("[Client] Disconnected: " + message);
         SwingUtilities.invokeLater(() -> {
-            // Показываем сообщение о кике или разрыве соединения
             JOptionPane.showMessageDialog(null, message, "Disconnected", JOptionPane.INFORMATION_MESSAGE);
-
-            // Закрываем окно игры
             if (gameWindow != null) {
-                gameWindow.dispose(); // Закрываем окно игры
+                gameWindow.dispose();
             }
-
-            // Возвращаем игрока в окно подключения
             if (connectionWindow != null) {
-                connectionWindow.showConnectionWindow(); // Показываем окно подключения
+                connectionWindow.showConnectionWindow();
             }
         });
     }
 
-
-    /**
-     * Обработка LOBBY_UPDATE.
-     * Формат, который мы приняли:
-     * "HOST|client-123;PLAYERS|client-123|Alex,cat;client-456|Bob,mouse;..."
-     */
     private void handleLobbyUpdate(String content) {
         System.out.println("[Client] LOBBY_UPDATE -> " + content);
         Map<String, PlayerInfo> newMap = parseLobbyData(content);
         playersMap.clear();
         playersMap.putAll(newMap);
 
-        // Обновляем лобби в UI
         if (gameWindow != null) {
-            // Преобразуем {clientId -> PlayerInfo} в {clientId -> role} для совместимости
             Map<String, String> simpleMap = new HashMap<>();
             for (var e : playersMap.entrySet()) {
-                // Отображаем: "Имя (clientId)"
                 String displayLine = e.getValue().displayName + " (" + e.getKey() + ")";
-                // role
                 String role = e.getValue().role;
-                // Допустим, хотим вывести "Alex (client-123),cat"
-                // Т. е. key = displayLine, value = role
                 simpleMap.put(displayLine, role);
             }
             gameWindow.updateLobbyPlayers(simpleMap);
         }
     }
 
-    /**
-     * Парсим строку лобби:
-     * "HOST|client-123;PLAYERS|client-123|Alex,cat;client-456|Bob,mouse;..."
-     */
     private Map<String, PlayerInfo> parseLobbyData(String content) {
         Map<String, PlayerInfo> result = new HashMap<>();
 
         String[] parts = content.split(";");
-        // parts[0] = "HOST|client-123"
-        // parts[1] = "PLAYERS|client-123|Alex,cat"
-        // parts[2] = "client-456|Bob,mouse"
-        // parts[3] = ""
-
-        // Пропускаем hostLine, если нужно
         boolean playersSection = false;
         StringBuilder playersData = new StringBuilder();
         for (int i=1; i<parts.length; i++) {
@@ -197,43 +148,33 @@ public class GameClient {
             }
         }
 
-        // теперь у нас "client-123|Alex,cat;client-456|Bob,mouse;"
         String[] entries = playersData.toString().split(";");
         for (String e : entries) {
             if (e.isBlank()) continue;
-            // e = "client-123|Alex,cat"
             String[] arr = e.split("\\|");
             if (arr.length != 2) continue;
-            String cId = arr[0];           // "client-123"
-            String nameAndRole = arr[1];   // "Alex,cat"
+            String cId = arr[0];
+            String nameAndRole = arr[1];
 
             String[] nr = nameAndRole.split(",");
             if (nr.length!=2) continue;
-            String pName = nr[0];         // "Alex"
+            String pName = nr[0];
             String pRole = nr[1];
-            // "cat"
 
             result.put(cId, new PlayerInfo(pName, pRole));
         }
         return result;
     }
 
-    /**
-     * START_GAME -> игра началась
-     * Ставим gameStarted=true и говорим окну переключиться (focus на gamePanel).
-     */
+
     private void handleStartGame() {
         gameStarted = true;
-        // Сообщаем панели
         if (gamePanel != null) {
             gamePanel.setGameStarted(true);
-            gamePanel.requestFocusInWindow(); // фокус
+            gamePanel.requestFocusInWindow();
         }
     }
 
-    /**
-     * RESET_LOBBY -> игра закончилась, нужно сбросить состояние
-     */
     private void handleResetLobby() {
         gameStarted = false;
         myRole = "pending";
@@ -245,16 +186,13 @@ public class GameClient {
         }
     }
 
-    /**
-     * STATE -> обновляем GamePanel
-     */
     private void parseAndUpdateState(String content) {
         boolean gOver = false;
         String winner = "none";
-        int catX = GameState.WIDTH / 2; // По умолчанию кот в центре
-        int catY = GameState.HEIGHT / 2; // По умолчанию кот в центре
+        int catX = GameState.WIDTH / 2;
+        int catY = GameState.HEIGHT / 2;
         int catVelX = 0, catVelY = 0;
-        var newMice = new ConcurrentHashMap<String, MouseView>(); // Используем ConcurrentHashMap
+        var newMice = new ConcurrentHashMap<String, MouseView>();
         var cheesePts = new ArrayList<Point>();
         var holePts = new ArrayList<Point>();
 
@@ -300,50 +238,35 @@ public class GameClient {
             }
         }
 
-        // Обновляем состояние игры
         gamePanel.updateState(gOver, winner, catX, catY, catVelX, catVelY, newMice, cheesePts, holePts);
     }
 
     private void parse(ArrayList<Point> Pts, String Data) {
-        String[] Coords = Data.split(","); // Разделяем координаты нор
+        String[] Coords = Data.split(",");
         for (int i = 0; i < Coords.length; i += 2) {
-            if (i + 1 >= Coords.length) break; // Проверяем, что есть две координаты
+            if (i + 1 >= Coords.length) break;
             int hx = Integer.parseInt(Coords[i]);
             int hy = Integer.parseInt(Coords[i + 1]);
             Pts.add(new Point(hx, hy));
         }
     }
 
-    // =============== Методы для управления ===============
-
-    /**
-     * При движении (стрелки)
-     */
     public void sendSetVelocity(int vx, int vy) {
         if (!gameStarted) return;
         if (!"cat".equals(myRole) && !"mouse".equals(myRole)) return;
         sendMessage(new Message(MessageType.SET_VELOCITY, vx + "," + vy));
     }
 
-    /**
-     * Хост кнопкой назначает роль
-     */
     public void assignRole(String clientId, String role) {
         if (!isHost) return;
         sendMessage(new Message(MessageType.ASSIGN_ROLE, clientId + "," + role));
     }
 
-    /**
-     * Хост нажимает "Start Game"
-     */
     public void startGame(int n) {
         if (!isHost) return;
         sendMessage(new Message(MessageType.START_GAME, String.valueOf(n)));
     }
 
-    /**
-     * Отключение
-     */
     public void disconnect() {
         running.set(false);
         sendMessage(new Message(MessageType.DISCONNECT, ""));
@@ -360,9 +283,6 @@ public class GameClient {
         }
     }
 
-    /**
-     * Отправляет запрос на кик игрока.
-     */
     public void kickPlayer(String clientId) {
         if (!isHost) return; // Только хост может кикать игроков
         sendMessage(new Message(MessageType.KICK_PLAYER, clientId));
@@ -378,9 +298,6 @@ public class GameClient {
         }
     }
 
-    /**
-     * Доступ к playersMap, чтобы лобби окно могло проверить условия (>=2 и <=5 и т.д.)
-     */
     public Map<String, PlayerInfo> getPlayersMap() {
         return playersMap;
     }
@@ -389,10 +306,9 @@ public class GameClient {
         return isHost;
     }
 
-    // =============== Вспомогательный класс для лобби ===============
     public static class PlayerInfo {
-        public String displayName; // Alex, Bob, ...
-        public String role;        // cat, mouse, host, pending
+        public String displayName;
+        public String role;
 
         public PlayerInfo(String name, String role) {
             this.displayName = name;

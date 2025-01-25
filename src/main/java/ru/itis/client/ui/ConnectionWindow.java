@@ -17,11 +17,10 @@ public class ConnectionWindow extends JFrame {
     private JButton connectButton;
 
     public ConnectionWindow() {
-        setTitle("Connect to Game");
+        setTitle("Подключение к игре");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        // Создаем градиентную панель
         JPanel mainPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -42,58 +41,44 @@ public class ConnectionWindow extends JFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Стиль для текстовых полей
         UIManager.put("TextField.background", new Color(255, 248, 220));
         UIManager.put("TextField.foreground", new Color(101, 67, 33));
         UIManager.put("TextField.font", new Font("Arial", Font.BOLD, 14));
 
-        // Создаем компоненты
         hostField = new JTextField("localhost", 20);
         portField = new JTextField("5555", 20);
         nameField = new JTextField(20);
-        hostButton = new JRadioButton("Create Game");
-        joinButton = new JRadioButton("Join Game");
-        connectButton = new JButton("Connect");
 
-        // Группируем радио кнопки
+        hostButton = new JRadioButton("Создать игру");
+        joinButton = new JRadioButton("Присоединиться");
         ButtonGroup group = new ButtonGroup();
         group.add(hostButton);
         group.add(joinButton);
-        joinButton.setSelected(true);
+        hostButton.setSelected(true);
 
-        // Стилизуем компоненты
-        Color textColor = new Color(255, 223, 186);
-        hostButton.setForeground(textColor);
-        joinButton.setForeground(textColor);
-        hostButton.setOpaque(false);
-        joinButton.setOpaque(false);
+        connectButton = new JButton("Подключиться");
+        styleButton(connectButton);
 
-        connectButton.setBackground(new Color(218, 165, 32));
-        connectButton.setForeground(Color.WHITE);
-        connectButton.setFocusPainted(false);
-        connectButton.setFont(new Font("Arial", Font.BOLD, 14));
-
-        // Добавляем компоненты
-        addComponent(mainPanel, new JLabel("Server:"), gbc, 0, 0);
-        addComponent(mainPanel, hostField, gbc, 1, 0);
-
-        addComponent(mainPanel, new JLabel("Port:"), gbc, 0, 1);
-        addComponent(mainPanel, portField, gbc, 1, 1);
-
-        addComponent(mainPanel, new JLabel("Name:"), gbc, 0, 2);
-        addComponent(mainPanel, nameField, gbc, 1, 2);
-
-        gbc.gridwidth = 2;
+        addComponent(mainPanel, new JLabel("Имя:"), gbc, 0, 0);
+        addComponent(mainPanel, nameField, gbc, 1, 0);
+        addComponent(mainPanel, new JLabel("Хост:"), gbc, 0, 1);
+        addComponent(mainPanel, hostField, gbc, 1, 1);
+        addComponent(mainPanel, new JLabel("Порт:"), gbc, 0, 2);
+        addComponent(mainPanel, portField, gbc, 1, 2);
         addComponent(mainPanel, hostButton, gbc, 0, 3);
-        addComponent(mainPanel, joinButton, gbc, 0, 4);
-        addComponent(mainPanel, connectButton, gbc, 0, 5);
+        addComponent(mainPanel, joinButton, gbc, 1, 3);
+        addComponent(mainPanel, connectButton, gbc, 0, 4, 2, 1);
 
-        // Стилизуем labels
-        Component[] components = mainPanel.getComponents();
-        for (Component comp : components) {
+        for (Component comp : mainPanel.getComponents()) {
             if (comp instanceof JLabel) {
-                comp.setForeground(textColor);
-                ((JLabel) comp).setFont(new Font("Arial", Font.BOLD, 14));
+                JLabel label = (JLabel) comp;
+                label.setForeground(Color.WHITE);
+                label.setFont(new Font("Arial", Font.BOLD, 14));
+            } else if (comp instanceof JRadioButton) {
+                JRadioButton radio = (JRadioButton) comp;
+                radio.setForeground(Color.WHITE);
+                radio.setOpaque(false);
+                radio.setFont(new Font("Arial", Font.BOLD, 14));
             }
         }
 
@@ -103,13 +88,14 @@ public class ConnectionWindow extends JFrame {
         pack();
         setLocationRelativeTo(null);
 
-        // Добавляем обработчик для кнопки Connect
         connectButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String name = nameField.getText().trim();
                 if (name.isEmpty()) {
-                    JOptionPane.showMessageDialog(ConnectionWindow.this, "Name cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(ConnectionWindow.this, 
+                        "Имя не может быть пустым!", "Ошибка", 
+                        JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -118,17 +104,13 @@ public class ConnectionWindow extends JFrame {
                 boolean isHost = hostButton.isSelected();
 
                 if (isHost) {
-                    // Запускаем сервер
                     new Thread(() -> {
                         GameServer server = new GameServer(port, true, null);
                         server.startServer();
                     }).start();
                 }
 
-                // Запускаем клиент
                 ClientMain.startClient(host, port, isHost, name, ConnectionWindow.this);
-
-                // Закрываем окно подключения
                 setVisible(false);
             }
         });
@@ -140,7 +122,23 @@ public class ConnectionWindow extends JFrame {
         panel.add(comp, gbc);
     }
 
-    // Метод для повторного показа окна подключения
+    private void addComponent(JPanel panel, Component comp, GridBagConstraints gbc, int x, int y, int width, int height) {
+        gbc.gridx = x;
+        gbc.gridy = y;
+        gbc.gridwidth = width;
+        gbc.gridheight = height;
+        panel.add(comp, gbc);
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+    }
+
+    private void styleButton(JButton button) {
+        button.setBackground(new Color(255, 248, 220));
+        button.setForeground(new Color(101, 67, 33));
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setFocusPainted(false);
+    }
+
     public void showConnectionWindow() {
         setVisible(true);
     }

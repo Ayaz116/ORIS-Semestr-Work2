@@ -4,11 +4,9 @@ import ru.itis.model.GameState;
 import ru.itis.protocol.Message;
 import ru.itis.protocol.MessageType;
 
-import java.awt.*;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,7 +23,6 @@ public class GameServer {
     private final boolean isLobbyMode;
     private volatile boolean gameStarted = false;
     private volatile String hostId = null;
-
     private ScheduledExecutorService exec;
 
     public GameServer(int port, boolean isLobbyMode, String hostId) {
@@ -110,7 +107,7 @@ public class GameServer {
         for (int i = 0; i < cheese.size(); i++) {
             var c = cheese.get(i);
             sb.append(c.x).append(",").append(c.y);
-            if (i < cheese.size() - 1) sb.append(","); // Разделяем координаты сыров запятыми
+            if (i < cheese.size() - 1) sb.append(",");
         }
 
         var holes = gameState.getHoles();
@@ -118,7 +115,7 @@ public class GameServer {
         for (int i = 0; i < holes.size(); i++) {
             var h = holes.get(i);
             sb.append(h.x).append(",").append(h.y);
-            if (i < holes.size() - 1) sb.append(","); // Разделяем координаты нор запятыми
+            if (i < holes.size() - 1) sb.append(",");
         }
 
         return sb.toString();
